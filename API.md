@@ -57,6 +57,57 @@ Common status codes:
 | `422` | Request validation failed |
 | `500` | Unexpected server error |
 
+## Public Catalyst initialization
+
+### Initialize required Catalyst resources
+
+`POST /init-tables`
+
+This route is intentionally unauthenticated so a newly deployed AppSail service can initialize itself. It is still protected by the global rate limiter. The AppSail environment must contain `CATALYST_PROJECT_ID` and `CATALYST_ACCESS_TOKEN`.
+
+Headers:
+
+```http
+Content-Type: application/json
+```
+
+No request body is required. Existing tables and the Filestore folder are treated as already initialized.
+
+Response `200`:
+
+```json
+{
+  "data": {
+    "initialized": true,
+    "resources": [
+      {
+        "resource": "table",
+        "name": "Workspaces",
+        "status": "created"
+      },
+      {
+        "resource": "table",
+        "name": "Mailboxes",
+        "status": "exists"
+      },
+      {
+        "resource": "table",
+        "name": "Messages",
+        "status": "created"
+      },
+      {
+        "resource": "filestore_folder",
+        "name": "openmailer-raw-mails",
+        "status": "created",
+        "folder_id": "folder-id"
+      }
+    ]
+  }
+}
+```
+
+If the Filestore folder is newly created, copy its `folder_id` to `CATALYST_RAW_MAIL_FOLDER_ID` in the AppSail environment. The endpoint should be disabled or protected after first-time provisioning in a production hardening pass because it is intentionally public.
+
 ## Workspaces
 
 ### Register a workspace

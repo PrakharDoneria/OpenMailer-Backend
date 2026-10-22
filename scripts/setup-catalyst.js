@@ -1,31 +1,36 @@
 const schemas = require("./init-schema");
 
-const region = process.env.CATALYST_REGION || "in";
-const projectId = process.env.CATALYST_PROJECT_ID;
-const accessToken = process.env.CATALYST_ACCESS_TOKEN;
-const apiBase = process.env.CATALYST_API_BASE_URL || `https://api.catalyst.zoho.${region}`;
-
-if (!projectId || !accessToken) {
-  throw new Error("CATALYST_PROJECT_ID and CATALYST_ACCESS_TOKEN are required for Catalyst resource setup.");
-}
-
-const tableDefinitions = [
-  { name: process.env.CATALYST_WORKSPACE_TABLE || "Workspaces", columns: schemas.Workspaces },
-  { name: process.env.CATALYST_MAILBOX_TABLE || "Mailboxes", columns: schemas.Mailboxes },
-  { name: process.env.CATALYST_MESSAGE_TABLE || "Messages", columns: schemas.Messages }
-];
-
 function columnType(description) {
   if (description.includes("boolean")) return "BOOLEAN";
   if (description.includes("timestamp")) return "DATETIME";
   return "VARCHAR";
 }
 
-async function catalystRequest(path, options = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
+function getSetupConfig() {
+  const region = process.env.CATALYST_REGION || "in";
+  const projectId = process.env.CATALYST_PROJECT_ID;
+  const accessToken = process.env.CATALYST_ACCESS_TOKEN;
+  if (!projectId || !accessToken) {
+    throw new Error("CATALYST_PROJECT_ID and CATALYST_ACCESS_TOKEN are required for Catalyst resource setup.");
+  }
+  return {
+    projectId,
+    accessToken,
+    apiBase: process.env.CATALYST_API_BASE_URL || `https://api.catalyst.zoho.${region}`,
+    tables: [
+      { name: process.env.CATALYST_WORKSPACE_TABLE || "Workspaces", columns: schemas.Workspaces },
+      { name: process.env.CATALYST_MAILBOX_TABLE || "Mailboxes", columns: schemas.Mailboxes },
+      { name: process.env.CATALYST_MESSAGE_TABLE || "Messages", columns: schemas.Messages }
+    ],
+    folderName: process.env.CATALYST_RAW_MAIL_FOLDER_NAME || "openmailer-raw-mails"
+  };
+}
+
+async function catalystRequest(config, path, options = {}) {
+  const response = await fetch(`${config.apiBase}${path}`, {
     ...options,
     headers: {
-      Authorization: `Zoho-oauthtoken ${accessToken}`,
+      Authorization: `Zoho-oauthtoken ${config.accessToken}`,
       "Content-Type": "application/json",
       ...(options.headers || {})
     }
@@ -43,7 +48,7 @@ async function catalystRequest(path, options = {}) {
   return { status: response.status, body: parsed };
 }
 
-async function createTable(table) {
+async function createTable(config, table) {
   const columns = Object.entries(table.columns)
     .filter(([name]) => name !== "row_id")
     .map(([name, description]) => ({
@@ -51,32 +56,47 @@ async function createTable(table) {
       data_type: columnType(description),
       is_mandatory: false
     }));
-  const result = await catalystRequest(`/baas/v1/project/${projectId}/datastore/tables`, {
+  const result = await catalystRequest(config, `/baas/v1/project/${config.projectId}/datastore/tables`, {
     method: "POST",
     body: JSON.stringify({ table_name: table.name, columns })
   });
-  console.log(`${result.status === 409 ? "Exists" : "Created"} Data Store table: ${table.name}`);
+  return { resource: "table", name: table.name, status: result.status === 409 ? "exists" : "created" };
 }
 
-async function createFolder() {
-  const folderName = process.env.CATALYST_RAW_MAIL_FOLDER_NAME || "openmailer-raw-mails";
-  const result = await catalystRequest(`/baas/v1/project/${projectId}/filestore/folder`, {
+async function createFolder(config) {
+  const result = await catalystRequest(config, `/baas/v1/project/${config.projectId}/filestore/folder`, {
     method: "POST",
-    body: JSON.stringify({ folder_name: folderName })
+    body: JSON.stringify({ folder_name: config.folderName })
   });
   const folderId = result.body.folder_id || result.body.id || result.body.folder?.id;
-  if (folderId) console.log(`Filestore folder ready: ${folderName} (${folderId})`);
-  else console.log(`${result.status === 409 ? "Exists" : "Created"} Filestore folder: ${folderName}`);
-  if (folderId) console.log(`Set CATALYST_RAW_MAIL_FOLDER_ID=${folderId} in the AppSail environment.`);
+  return {
+    resource: "filestore_folder",
+    name: config.folderName,
+    status: result.status === 409 ? "exists" : "created",
+    folder_id: folderId || null
+  };
 }
 
-async function main() {
-  for (const table of tableDefinitions) await createTable(table);
-  await createFolder();
-  console.log("Catalyst resource setup completed.");
+async function provisionResources() {
+  const config = getSetupConfig();
+  const resources = [];
+  for (const table of config.tables) resources.push(await createTable(config, table));
+  resources.push(await createFolder(config));
+  return resources;
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  provisionResources()
+    .then((resources) => {
+      resources.forEach((resource) => console.log(`${resource.status === "exists" ? "Exists" : "Created"} ${resource.resource}: ${resource.name}`));
+      const folder = resources.find((resource) => resource.resource === "filestore_folder");
+      if (folder?.folder_id) console.log(`Set CATALYST_RAW_MAIL_FOLDER_ID=${folder.folder_id} in the AppSail environment.`);
+      console.log("Catalyst resource setup completed.");
+    })
+    .catch((error) => {
+      console.error(error.message);
+      process.exitCode = 1;
+    });
+}
+
+module.exports = { provisionResources };

@@ -11,7 +11,10 @@ const schema = z.object({
   CATALYST_WORKSPACE_TABLE: z.string().default("Workspaces"),
   CATALYST_MAILBOX_TABLE: z.string().default("Mailboxes"),
   CATALYST_MESSAGE_TABLE: z.string().default("Messages"),
-  CATALYST_RAW_MAIL_FOLDER_ID: z.string().min(1),
+  CATALYST_PROJECT_ID: z.string().optional(),
+  CATALYST_ACCESS_TOKEN: z.string().min(1).optional(),
+  CATALYST_RAW_MAIL_FOLDER_ID: z.string().min(1).optional(),
+  CATALYST_RAW_MAIL_FOLDER_NAME: z.string().default("openmailer-raw-mails"),
   DNS_VERIFICATION_TOKEN_SECRET: z.string().min(16),
   INBOUND_WEBHOOK_SECRET: z.string().min(16),
   MAX_RAW_MAIL_BYTES: z.coerce.number().int().positive().default(10485760)

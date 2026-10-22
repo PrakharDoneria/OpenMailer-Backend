@@ -144,6 +144,10 @@ MAX_RAW_MAIL_BYTES=10485760
 
 `API_KEY`, `CATALYST_RAW_MAIL_FOLDER_ID`, `DNS_VERIFICATION_TOKEN_SECRET`, and `INBOUND_WEBHOOK_SECRET` are required. Use long random values for secrets and never commit `.env`.
 
+`CATALYST_PROJECT_ID` and `CATALYST_ACCESS_TOKEN` are required by the public `/init-tables` provisioning endpoint and by `setup.sh`. Keep the OAuth access token only in the private AppSail environment; never expose it to clients or commit it.
+
+All origins are currently allowed by CORS (`Access-Control-Allow-Origin: *`) so browser clients can call the service from any website. API key and webhook-secret authentication still apply to the `/api/v1` routes.
+
 ## Install and run locally
 
 ```powershell
@@ -196,15 +200,16 @@ The AppSail runtime is configured in [app-config.json](./app-config.json):
 ## Typical setup flow
 
 1. Create and configure the Catalyst project.
-2. Create the three Data Store tables and Filestore folder.
-3. Configure `.env` values in the AppSail environment.
-4. Deploy with `deploy.sh`.
-5. Register a workspace using `POST /api/v1/workspaces`.
-6. Add the returned TXT, MX, and DKIM DNS records.
-7. Verify the domain.
-8. Provision mailboxes.
-9. Configure inbound mail routing to `/api/v1/mail/inbound-webhook`.
-10. Send and retrieve mail using the endpoints in [API.md](./API.md).
+2. Configure `CATALYST_PROJECT_ID` and `CATALYST_ACCESS_TOKEN` in the AppSail environment.
+3. Deploy with `deploy.sh`.
+4. Call `POST /init-tables` once to create the Data Store tables and Filestore folder.
+5. Copy the returned Filestore folder ID to `CATALYST_RAW_MAIL_FOLDER_ID` and redeploy/restart.
+6. Register a workspace using `POST /api/v1/workspaces`.
+7. Add the returned TXT, MX, and DKIM DNS records.
+8. Verify the domain.
+9. Provision mailboxes.
+10. Configure inbound mail routing to `/api/v1/mail/inbound-webhook`.
+11. Send and retrieve mail using the endpoints in [API.md](./API.md).
 
 ## Validation and security notes
 
