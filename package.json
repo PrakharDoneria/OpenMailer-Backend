@@ -1,0 +1,34 @@
+{
+  "name": "openmailer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Multi-tenant workspace mail provider running on Zoho Catalyst AppSail.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "lint": "eslint .",
+    "schema:init": "node scripts/init-schema.js",
+    "check": "npm run lint"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "mailparser": "^3.7.2",
+    "pino": "^9.4.0",
+    "pino-http": "^10.3.0",
+    "zod": "^3.23.8",
+    "zcatalyst-sdk-node": "^2.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "@eslint/js": "^9.13.0"
+  }
+}

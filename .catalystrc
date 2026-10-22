@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "88678000000016030",
+      "name": "openmailer",
+      "domain": {
+        "id": "50047080675",
+        "name": "openmailer-60092604673.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "60092604673",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}
