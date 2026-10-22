@@ -144,7 +144,7 @@ MAX_RAW_MAIL_BYTES=10485760
 
 `API_KEY`, `CATALYST_RAW_MAIL_FOLDER_ID`, `DNS_VERIFICATION_TOKEN_SECRET`, and `INBOUND_WEBHOOK_SECRET` are required. Use long random values for secrets and never commit `.env`.
 
-`CATALYST_PROJECT_ID` and `CATALYST_ACCESS_TOKEN` are required by the public `/init-tables` provisioning endpoint and by `setup.sh`. Keep the OAuth access token only in the private AppSail environment; never expose it to clients or commit it.
+`CATALYST_PROJECT_ID` and `CATALYST_ACCESS_TOKEN` are required by the public `/init-tables` provisioning endpoint and by `setup.sh`. Keep the OAuth access token only in the private AppSail environment; never expose it to clients or commit it. The token must have Catalyst project, Data Store, and Filestore management scopes. A missing token returns `503 SERVICE_CONFIGURATION_ERROR`.
 
 All origins are currently allowed by CORS (`Access-Control-Allow-Origin: *`) so browser clients can call the service from any website. API key and webhook-secret authentication still apply to the `/api/v1` routes.
 

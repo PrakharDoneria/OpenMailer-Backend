@@ -4,8 +4,13 @@ function notFound(_req, res) {
 
 function errorHandler(err, _req, res, _next) {
   const status = Number.isInteger(err.statusCode) ? err.statusCode : 500;
-  if (status === 500) console.error(err);
-  res.status(status).json({ error: { code: status === 500 ? "INTERNAL_ERROR" : "REQUEST_ERROR", message: status === 500 ? "An unexpected error occurred" : err.message } });
+  if (status >= 500) console.error({ message: err.message, cause: err.cause });
+  res.status(status).json({
+    error: {
+      code: status >= 500 ? "SERVICE_CONFIGURATION_ERROR" : "REQUEST_ERROR",
+      message: status >= 500 ? err.message : err.message
+    }
+  });
 }
 
 module.exports = { notFound, errorHandler };

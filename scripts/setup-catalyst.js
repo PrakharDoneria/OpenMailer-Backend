@@ -11,7 +11,10 @@ function getSetupConfig() {
   const projectId = process.env.CATALYST_PROJECT_ID;
   const accessToken = process.env.CATALYST_ACCESS_TOKEN;
   if (!projectId || !accessToken) {
-    throw new Error("CATALYST_PROJECT_ID and CATALYST_ACCESS_TOKEN are required for Catalyst resource setup.");
+    throw Object.assign(
+      new Error("Catalyst provisioning is not configured. Set CATALYST_PROJECT_ID and CATALYST_ACCESS_TOKEN in the AppSail environment."),
+      { statusCode: 503 }
+    );
   }
   return {
     projectId,
@@ -27,14 +30,19 @@ function getSetupConfig() {
 }
 
 async function catalystRequest(config, path, options = {}) {
-  const response = await fetch(`${config.apiBase}${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Zoho-oauthtoken ${config.accessToken}`,
-      "Content-Type": "application/json",
-      ...(options.headers || {})
-    }
-  });
+  let response;
+  try {
+    response = await fetch(`${config.apiBase}${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Zoho-oauthtoken ${config.accessToken}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+  } catch (error) {
+    throw Object.assign(new Error("Unable to connect to the Catalyst provisioning API."), { statusCode: 503, cause: error });
+  }
   const body = await response.text();
   let parsed;
   try {
@@ -43,7 +51,10 @@ async function catalystRequest(config, path, options = {}) {
     parsed = { raw: body };
   }
   if (!response.ok && response.status !== 409) {
-    throw new Error(`Catalyst API ${response.status} ${response.statusText}: ${body}`);
+    const error = new Error(`Catalyst provisioning failed with HTTP ${response.status}. Check the project, region, token scopes, and resource API configuration.`);
+    error.statusCode = response.status === 401 || response.status === 403 ? 503 : 502;
+    error.cause = { status: response.status, body };
+    throw error;
   }
   return { status: response.status, body: parsed };
 }
