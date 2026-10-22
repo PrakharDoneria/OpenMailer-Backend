@@ -42,7 +42,8 @@ OpenMailer is a modular, multi-tenant workspace mail backend built with Node.js,
 │   ├── services/        Workspace, domain, and mail business logic
 │   └── server.js        Express/AppSail entrypoint
 ├── scripts/
-│   └── init-schema.js   Catalyst table schema reference
+│   ├── init-schema.js   Catalyst table schema reference
+│   └── setup-catalyst.js Catalyst resource provisioning
 ├── API.md               Complete endpoint reference
 ├── app-config.json      AppSail runtime configuration
 ├── catalyst.json        Catalyst AppSail resource configuration
@@ -92,6 +93,28 @@ Create the following Catalyst Data Store tables. The schema is also printed by `
 | `timestamp` | Timestamp |
 
 Create a Catalyst Filestore folder and place its ID in `CATALYST_RAW_MAIL_FOLDER_ID`.
+
+### Provision resources automatically
+
+The repository includes `setup.sh`, which creates the three Data Store tables and the raw-mail Filestore folder through the Catalyst project APIs. It is intentionally separate from deployment and requires an explicit OAuth access token.
+
+From Git Bash or WSL:
+
+```bash
+export CATALYST_PROJECT_ID="your-project-id"
+export CATALYST_ACCESS_TOKEN="your-oauth-access-token"
+./setup.sh
+```
+
+From PowerShell, set the variables before invoking Git Bash:
+
+```powershell
+$env:CATALYST_PROJECT_ID = "your-project-id"
+$env:CATALYST_ACCESS_TOKEN = "your-oauth-access-token"
+bash .\setup.sh
+```
+
+The script is idempotent for resources that already exist: a Catalyst `409 Conflict` is reported as `Exists` rather than treated as a failure. It prints the newly created Filestore folder ID; copy that value to `CATALYST_RAW_MAIL_FOLDER_ID` in the AppSail environment. Keep the OAuth token out of `.env`, source control, and deployment logs.
 
 For outbound mail, configure and verify permitted sender addresses in the Catalyst console. OpenMailer calls Catalyst's native `app.mail().sendMail()` API; it does not use a generic SMTP provider.
 

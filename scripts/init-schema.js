@@ -28,6 +28,10 @@ const schema = {
   }
 };
 
-console.log("Create these Catalyst Data Store tables in the Catalyst console:");
-console.log(JSON.stringify(schema, null, 2));
-console.log("Catalyst Data Store does not expose portable table DDL through the Node SDK; this script is an auditable schema initializer/documentation check.");
+module.exports = schema;
+
+if (require.main === module) {
+  console.log("Create these Catalyst Data Store tables in the Catalyst console:");
+  console.log(JSON.stringify(schema, null, 2));
+  console.log("Catalyst Data Store does not expose portable table DDL through the Node SDK; this script is an auditable schema initializer/documentation check.");
+}

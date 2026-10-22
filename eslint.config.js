@@ -13,6 +13,7 @@ module.exports = [
       globals: {
         Buffer: "readonly",
         console: "readonly",
+        fetch: "readonly",
         module: "readonly",
         process: "readonly",
         require: "readonly"

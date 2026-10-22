@@ -9,6 +9,7 @@
     "dev": "node --watch src/server.js",
     "lint": "eslint .",
     "schema:init": "node scripts/init-schema.js",
+    "catalyst:setup": "node scripts/setup-catalyst.js",
     "check": "npm run lint"
   },
   "engines": {
