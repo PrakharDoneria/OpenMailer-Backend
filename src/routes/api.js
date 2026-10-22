@@ -1,11 +1,10 @@
 const express = require("express");
 const env = require("../config/env");
-const { requireApiKey, requireInboundSecret } = require("../middlewares/auth");
+const { requireInboundSecret } = require("../middlewares/auth");
 const { validate, workspaceBody, domainBody, mailboxBody, sendBody } = require("../middlewares/validation");
 const controller = require("../controllers/controllers");
 
 const router = express.Router();
-router.use(requireApiKey);
 router.post("/workspaces", validate(workspaceBody), controller.registerWorkspace);
 router.post("/workspaces/:id/domains", validate(domainBody), controller.addDomain);
 router.post("/workspaces/:id/domains/verify", controller.verifyDomain);

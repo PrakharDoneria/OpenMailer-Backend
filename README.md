@@ -14,7 +14,7 @@ OpenMailer is a modular, multi-tenant workspace mail backend built with Node.js,
 - Raw `.eml` storage in Catalyst Filestore
 - Message indexing and paginated inbox retrieval
 - Catalyst Data Store repositories
-- API key and inbound webhook authentication
+- Inbound webhook authentication
 - Zod request validation
 - Helmet, CORS, rate limiting, and structured logging
 - Catalyst AppSail deployment script
@@ -132,7 +132,6 @@ Set every required value in `.env`:
 NODE_ENV=development
 PORT=9000
 LOG_LEVEL=info
-API_KEY=replace-with-a-long-random-secret
 CATALYST_WORKSPACE_TABLE=Workspaces
 CATALYST_MAILBOX_TABLE=Mailboxes
 CATALYST_MESSAGE_TABLE=Messages
@@ -142,11 +141,11 @@ INBOUND_WEBHOOK_SECRET=replace-with-a-long-random-secret
 MAX_RAW_MAIL_BYTES=10485760
 ```
 
-`API_KEY`, `CATALYST_RAW_MAIL_FOLDER_ID`, `DNS_VERIFICATION_TOKEN_SECRET`, and `INBOUND_WEBHOOK_SECRET` are required. Use long random values for secrets and never commit `.env`.
+`CATALYST_RAW_MAIL_FOLDER_ID`, `DNS_VERIFICATION_TOKEN_SECRET`, and `INBOUND_WEBHOOK_SECRET` are required. Use long random values for secrets and never commit `.env`.
 
 `CATALYST_PROJECT_ID` and `CATALYST_ACCESS_TOKEN` are required by the public `/init-tables` provisioning endpoint and by `setup.sh`. Keep the OAuth access token only in the private AppSail environment; never expose it to clients or commit it. The token must have Catalyst project, Data Store, and Filestore management scopes. A missing token returns `503 SERVICE_CONFIGURATION_ERROR`.
 
-All origins are currently allowed by CORS (`Access-Control-Allow-Origin: *`) so browser clients can call the service from any website. API key and webhook-secret authentication still apply to the `/api/v1` routes.
+All origins are currently allowed by CORS (`Access-Control-Allow-Origin: *`) so browser clients can call the service from any website. API routes do not require an API key. Inbound webhook requests still require the configured webhook secret.
 
 ## Install and run locally
 
@@ -213,12 +212,11 @@ The AppSail runtime is configured in [app-config.json](./app-config.json):
 
 ## Validation and security notes
 
-- API keys must be sent over HTTPS.
-- Inbound webhook requests require a second secret header.
+- Inbound webhook requests require the configured secret header.
 - Mailbox passwords are hashed and never returned.
 - Raw inbound messages are size-limited.
 - Request bodies are validated before business logic executes.
-- Do not log API keys, webhook secrets, mailbox passwords, or raw message contents.
+- Do not log webhook secrets, mailbox passwords, or raw message contents.
 - Catalyst sender verification is separate from custom-domain DNS verification.
 
 ## API documentation

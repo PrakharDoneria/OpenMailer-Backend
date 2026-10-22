@@ -7,7 +7,6 @@ const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().int().positive().default(9000),
   LOG_LEVEL: z.string().default("info"),
-  API_KEY: z.string().min(16),
   CATALYST_WORKSPACE_TABLE: z.string().default("Workspaces"),
   CATALYST_MAILBOX_TABLE: z.string().default("Mailboxes"),
   CATALYST_MESSAGE_TABLE: z.string().default("Messages"),

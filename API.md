@@ -14,10 +14,9 @@ Replace the base URL with the URL printed by `deploy.sh` after deployment.
 
 ## Authentication
 
-All endpoints require an API key:
+API endpoints do not require an API key.
 
 ```http
-Authorization: Bearer <API_KEY>
 ```
 
 JSON endpoints additionally require:
@@ -26,7 +25,7 @@ JSON endpoints additionally require:
 Content-Type: application/json
 ```
 
-The inbound webhook requires both the API key and the configured webhook secret:
+The inbound webhook requires the configured webhook secret:
 
 ```http
 X-Inbound-Webhook-Secret: <INBOUND_WEBHOOK_SECRET>
@@ -117,7 +116,6 @@ If the Filestore folder is newly created, copy its `folder_id` to `CATALYST_RAW_
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
@@ -159,7 +157,6 @@ Response `201`:
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
@@ -207,7 +204,6 @@ Add the returned DNS records before calling domain verification.
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 ```
 
 No request body is required. The service resolves `_openmailer.<domain>` and compares its TXT value with the generated verification token.
@@ -234,7 +230,6 @@ If the TXT record is missing or does not match, the endpoint returns `409`.
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
@@ -275,7 +270,6 @@ Response `201`:
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 ```
 
 Response `200`:
@@ -305,7 +299,6 @@ Password hashes are excluded from this response.
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 Content-Type: application/json
 ```
 
@@ -365,7 +358,6 @@ Send the raw RFC 822 message as the request body.
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 X-Inbound-Webhook-Secret: <INBOUND_WEBHOOK_SECRET>
 Content-Type: message/rfc822
 ```
@@ -413,7 +405,6 @@ Response `201`:
 Headers:
 
 ```http
-Authorization: Bearer <API_KEY>
 ```
 
 Query parameters:
@@ -427,7 +418,6 @@ Example:
 
 ```http
 GET /api/v1/mailboxes/mailbox-row-id/messages?page=1&limit=25
-Authorization: Bearer <API_KEY>
 ```
 
 Response `200`:
